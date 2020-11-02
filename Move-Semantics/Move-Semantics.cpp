@@ -38,6 +38,7 @@ public:
 	}
 
 	// Copy constructor
+	// Deep copy
 	String(const String& other)
 	{
 		printf("Copied!\n");
@@ -46,8 +47,25 @@ public:
 		memcpy(m_Data, other.m_Data, m_Size);
 	}
 
+	// Move constructor, takes a temporary (rvalue) object.
+	String(String&& other) noexcept
+	{
+		printf("Moved!\n");
+		m_Size = other.m_Size;
+		m_Data = other.m_Data;
+
+		// Do not need, we just point to the same block of
+		// data as the old string.
+		// memcpy(m_Data, other.m_Data, m_Size);
+
+		// Take care of string instance stole
+		other.m_Data = nullptr;
+		other.m_Size = 0;
+	}
+
 	~String()
 	{
+		std::cout << "Destroyed\n";
 		delete m_Data;
 	}
 
@@ -71,7 +89,17 @@ class Entity
 {
 
 public:
+	// Entity constructor, copies name into m_Name.
 	Entity(const String& name) : m_Name(name)
+	{
+
+	}
+
+	// Entity constructor that takes a temporary to use
+	// with move semantics. Notice the name parameter
+	// is called using std::move; this forces the move
+	// constructor to be used over the copy constructor.
+	Entity(String&& name) : m_Name(std::move(name))
 	{
 
 	}
@@ -87,6 +115,8 @@ private:
 
 int main()
 {
+	// Create object inside main function.
+	// "Foo" is a temporary object.
 	Entity entity(String("Foo"));
 	entity.PrintName();
 
